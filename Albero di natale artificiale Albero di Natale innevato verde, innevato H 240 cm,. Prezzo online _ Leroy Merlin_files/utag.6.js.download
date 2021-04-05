@@ -1,0 +1,242 @@
+//~~tv:22017.20150422
+//~~tc: New variant of VersaTag from Sizmek
+
+//tealium universal tag - utag.sender.22017 ut4.0.202101071048, Copyright 2021 Tealium.com Inc. All Rights Reserved.
+try {
+  (function (id, loader) {
+    var u = {};
+    utag.o[loader].sender[id] = u;
+
+    // Please do not modify
+    if (utag.ut === undefined) { utag.ut = {}; }
+    // Start Tealium loader 4.35
+    if (utag.ut.loader === undefined) { u.loader = function (o) { var b, c, l, a = document; if (o.type === "iframe") { b = a.createElement("iframe"); o.attrs = o.attrs || { "height" : "1", "width" : "1", "style" : "display:none" }; for( l in utag.loader.GV(o.attrs) ){ b.setAttribute( l, o.attrs[l] ); } b.setAttribute("src", o.src); }else if (o.type=="img"){ utag.DB("Attach img: "+o.src); b=new Image();b.src=o.src; return; }else{ b = a.createElement("script");b.language="javascript";b.type="text/javascript";b.async=1;b.charset="utf-8"; for( l in utag.loader.GV(o.attrs) ){ b[l] = o.attrs[l]; } b.src = o.src; } if(o.id){b.id=o.id}; if (typeof o.cb=="function") { if(b.addEventListener) { b.addEventListener("load",function(){o.cb()},false); }else { /* old IE support */ b.onreadystatechange=function(){if(this.readyState=='complete'||this.readyState=='loaded'){this.onreadystatechange=null;o.cb()}}; } } l = o.loc || "head"; c = a.getElementsByTagName(l)[0]; if (c) { utag.DB("Attach to "+l+": "+o.src); if (l == "script") { c.parentNode.insertBefore(b, c); } else { c.appendChild(b) } } } } else { u.loader = utag.ut.loader; }
+    // End Tealium loader
+
+    u.escapefn = function (obj) {
+      var escape = window.encodeURIComponent || window.escape;
+      for (property in obj) {
+        if (obj.hasOwnProperty(property)) {
+          obj[property] = escape(obj[property]);
+        }
+      }
+      return obj;
+    };
+
+    u.ev = {"view" : 1, "link" : 1};
+    u.initialized = false;
+    u.scriptrequested = false;
+    u.queue = [];
+
+      u.map={"cp.utag_main_ses_id":"Session","ext_page_name":"cp.page_name","page_name_lv1":"cp.page_name_lv1","page_name_lv2":"cp.page_name_lv2","page_name_lv3":"cp.page_name_lv3","page_name_lv4":"cp.page_name_lv4","page_name_lv5":"cp.page_name_lv5","page_name_lv6":"cp.page_name_lv6","page_name_lv7":"cp.page_name_lv7","ext_sz_idea_registration":"cp.idea_registration","versa_quantity_array":"cp.Quantity_array","versa_value_array":"cp.Value_array","versa_quantity":"product_quantity","versa_value":"product_unit_price","ext_prod_id_sz":"product_id"};
+  u.extend=[function(a,b){
+if (b.page_load == "1") {
+  return false;
+}
+},
+function(a,b){
+if (b.from == "app") {
+  return false;
+}
+},
+function(a,b){
+if (b.search_type == "suggerimento" && b.search_keyword.length <3 ) {
+  return false;
+}
+
+},
+function(a,b){
+if (b.ext_flag_trans_dd == "vero") {
+  return false;
+}
+},
+function(a,b){ try{ if(typeof b['page_name']!='undefined'){try{b['page_name_lv1']=b.ext_page_name_arr[0] || ""}catch(e){};try{b['page_name_lv2']=b.ext_page_name_arr[1] || ""}catch(e){};try{b['page_name_lv3']=b.ext_page_name_arr[2] || ""}catch(e){};try{b['page_name_lv4']=b.ext_page_name_arr[3] || ""}catch(e){};try{b['page_name_lv5']=b.ext_page_name_arr[4] || ""}catch(e){};try{b['page_name_lv6']=b.ext_page_name_arr[5] || ""}catch(e){};try{b['page_name_lv7']=b.ext_page_name_arr[6] || ""}catch(e){}} } catch(e){ utag.DB(e); }  },
+function(a,b){
+if (b['idea_registration'] == '1' && b['dom.pathname'] == '/adesione/riepilogo') {
+  window.utag_data.sizmek_idea_registration_persist = '1';
+} else if (b['dom.pathname'] == '/mylm/idea-piu' && window.utag_data.sizmek_idea_registration_persist == '1') {
+  b['ext_sz_idea_registration'] = '1';
+  delete window.utag_data.sizmek_idea_registration_persist;
+}
+},
+function(a,b){ try{ if(typeof b['_cquan']!='undefined'&&b['_cquan']!=''){try{b['versa_quantity_array']=b['_cquan'].join('|')}catch(e){};try{b['versa_quantity']=[utag.helpers.arraySum(b['_cquan'])]}catch(e){}} } catch(e){ utag.DB(e); }  },
+function(a,b){ try{ if(typeof b['_cprice']!='undefined'&&b['_cprice']!=''){try{b['versa_value_array']=b['_cprice'].join('|')}catch(e){}} } catch(e){ utag.DB(e); }  },
+function(a,b){ try{ if((typeof b['_cquan']!='undefined'&&b['_cquan']!=''&&typeof b['_cprice']!='undefined'&&b['_cprice']!='')){try{b['versa_value']=[""+utag.helpers.versaValue(b['_cquan'], b['_cprice'])]}catch(e){}} } catch(e){ utag.DB(e); }  }];
+
+
+    u.send = function (a, b) {
+      if (u.ev[a] || u.ev.all !== undefined) {
+        //##UTENABLEDEBUG##utag.DB("send:##UTID##");
+
+        var c, d, e, f;
+
+        u.data = {
+          "id" : "2819",
+          "sync" : 0,
+          "dispType" : "js",
+          "ptcl" : document.location.protocol === "https:" ? "https" : "http",
+          "bsUrl" : "bs.serving-sys.com/BurstingPipe",
+          "mobile" : 0,
+          "activityParams" : {},
+          "retargetParams" : {},
+          "dynamicRetargetParams" : {},
+          "conditionalParams" : {},
+          "base_url" : (document.location.protocol == "https:" ? "https://secure-" : "http://") + "ds.serving-sys.com/SemiCachedScripts/ebOneTag.js",
+          "Session" : b["cp.utag_main_ses_id"],
+          "ActivityID": "",
+          "url": b["dom.url"],
+          // E-Commerce Vars
+          "order_id" : "",
+          "product_id" : [],
+          "product_name" : [],
+          "product_quantity" : [],
+          "product_unit_price" : []
+        };
+
+        // Start tag-scoped extensions
+        for(c=0;c<u.extend.length;c++){try{d=u.extend[c](a,b);if(d==false)return}catch(e){}};
+        // End tag-scoped extensions
+
+        c = [];
+
+        // Start Mapping
+        for (d in utag.loader.GV(u.map)) {
+          if (b[d] !== undefined && b[d] !== "") {
+            e = u.map[d].split(",");
+            for (f = 0; f < e.length; f++) {
+              if (e[f].indexOf("rtp.") === 0) {
+                u.data.retargetParams[e[f].substr(4)] = b[d];
+              } else if (e[f].indexOf("drtp.") === 0) {
+                u.data.dynamicRetargetParams[e[f].substr(5)] = b[d];
+              } else if (e[f].indexOf("cp.") === 0) {
+                u.data.conditionalParams[e[f].substr(3)] = b[d];
+              } else if (e[f].indexOf("act.") === 0) {
+                u.data.activityParams[e[f].substr(4)] = b[d];
+              } else {
+                u.data[e[f]] = b[d];
+              }
+            }
+          }
+        }
+        // End Mapping
+
+        // Pull E-Commerce extension values
+        // Mappings override E-Commerce extension values
+        u.data.order_id = u.data.orderId || u.data.order_id || b._corder || "";
+        if (u.data.product_id.length === 0 && b._cprod !== undefined) { u.data.product_id = b._cprod.slice(0); }
+        if (u.data.product_name.length === 0 && b._cprodname !== undefined) { u.data.product_name = b._cprodname.slice(0); }
+        if (u.data.product_quantity.length === 0 && b._cquan !== undefined) { u.data.product_quantity = b._cquan.slice(0); }
+        if (u.data.product_unit_price.length === 0 && b._cprice !== undefined) { u.data.product_unit_price = b._cprice.slice(0); }
+
+        //Session
+        u.data.activityParams.Session = u.data.Session;
+        //Activity ID
+        u.data.activityParams.ActivityID = u.data.ActivityID;
+        //OrderID
+        if (u.data.order_id) { u.data.activityParams.OrderID = u.data.order_id.replace("#", "|"); }
+        //Value
+        if (u.data.product_unit_price.length > 0) { u.data.activityParams.Value = u.data.product_unit_price.join("|"); }
+	//MODIFICA BITBANG
+	//productid
+        if (u.data.product_id.length > 0) {
+        	u.data.activityParams.productid = u.data.product_id.join("|");
+		u.data.activityParams.productid_array = u.data.product_id.join("|");
+			
+        }
+        //productinfo
+        if (u.data.product_name.length > 0) {
+        	u.data.activityParams.productinfo = u.data.product_name.join("|");
+		u.data.activityParams.productinfo_array = u.data.product_name.join("|");
+        }
+	//FINE MODIFICA BITBANG
+        //Quantity
+        if (u.data.product_quantity.length > 0) { u.data.activityParams.Quantity = u.data.product_quantity.join("|"); }
+
+
+        // the mapped url *must* have a protocol
+        if (!/^https?:\/\//i.test(u.data.url)) {
+          u.data.url = u.data.ptcl + "://" + u.data.url;
+        }
+
+        // any value passed to versatag must be properly url encoded
+        u.data.activityParams = u.escapefn(u.data.activityParams);
+        u.data.retargetParams = u.escapefn(u.data.retargetParams);
+        u.data.dynamicRetargetParams = u.escapefn(u.data.dynamicRetargetParams);
+        u.data.conditionalParams = u.escapefn(u.data.conditionalParams);
+
+        // Start Loader Callback
+        u.loader_cb = function (a,b) {
+          var d, vt = window.versaTagObj;
+          // versaTagObj is declared in ebOnTag.js
+          if ('view' === a) {
+            vt._oneTagObj.id = u.data.id || vt._oneTagObj.id;
+            vt._oneTagObj.sync = u.data.sync || vt._oneTagObj.sync;
+            vt._oneTagObj.dispType = u.data.dispType || vt._oneTagObj.dispType;
+            vt._oneTagObj.ptcl = u.data.ptcl || vt._oneTagObj.ptcl;
+            vt._oneTagObj.bsUrl = u.data.bsUrl || vt._oneTagObj.bsUrl;
+            vt._oneTagObj.mobile = u.data.mobile || vt._oneTagObj.mobile;
+          }
+
+          vt.clearActivityParam();
+          for(d in utag.loader.GV(u.data.activityParams)) {
+            vt.setActivityParam(d, u.data.activityParams[d]);
+          }
+          vt.clearRetargetParam();
+          for(d in utag.loader.GV(u.data.retargetParams)) {
+            vt.setRetargetParam(d, u.data.retargetParams[d]);
+          }
+          vt.clearDynamicRetargetParam();
+          for(d in utag.loader.GV(u.data.dynamicRetargetParams)) {
+            vt.setDynamicRetargetParam(d, u.data.dynamicRetargetParams[d]);
+          }
+          vt.clearConditionalParam();
+          for(d in utag.loader.GV(u.data.conditionalParams)) {
+            vt.setConditionalParam(d, u.data.conditionalParams[d]);
+          }
+
+          vt.generateRequest(u.data.url);
+        };
+        // End Loader Callback
+
+        u.callBack = function () {
+          u.initialized = true;
+          var data = {};
+          while (data = u.queue.shift()) {
+            u.data = data.data;
+            u.loader_cb(data.a,data.b);
+          }
+        };
+
+        if (u.initialized) {
+          u.loader_cb(a,b);
+        } else {
+          u.queue.push({"data" : u.data, "a" : a, "b" : b});
+          if (!u.scriptrequested) {
+            u.scriptrequested = true;
+            u.queue.shift(); //remove the first event so we don't get double counting
+            window.versaTag = {
+              "id" : u.data.id,
+              "sync" : u.data.sync,
+              "dispType" : u.data.dispType,
+              "ptcl" : u.data.ptcl,
+              "bsUrl" : u.data.bsUrl,
+              "mobile" : u.data.mobile,
+              "activityParams" : u.data.activityParams,
+              "retargetParams" : u.data.retargetParams,
+              "dynamicRetargetParams" : u.data.dynamicRetargetParams,
+              "conditionalParams" : u.data.conditionalParams
+            };
+            utag.ut.loader({"type" : "script", "src" : u.data.base_url, "cb" : u.callBack, "loc" : "script", "id" : "ebOneTagUrlId" });
+          }
+        }
+
+        //##UTENABLEDEBUG##utag.DB("send:##UTID##:COMPLETE");
+      }
+    };
+    utag.o[loader].loader.LOAD(id);
+  }("6", "leroymerlinit.main"));
+} catch (error) {
+  utag.DB(error);
+}
+//end tealium universal tag
+

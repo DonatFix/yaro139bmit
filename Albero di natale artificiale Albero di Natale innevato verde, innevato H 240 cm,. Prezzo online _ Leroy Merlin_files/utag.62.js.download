@@ -1,0 +1,697 @@
+/* 14/09/2017 - riga 288 BitBang - modded adding Google Optimize */
+//~~tv:7110.20151026
+//~~tc: Added logic to auto-generate a tracker name if one hasn't been defined.
+//      Customised to allow promo views to be sent on utag.link events as long as an event is sent at the same time
+//      Removed nonInteraction "set" command and switched it for sending nonInteraction at hit level, to avoid setting it for the whole session
+//      Added code to set screenName on event call
+
+window.GoogleAnalyticsObject = "" || "ga";
+
+window[window.GoogleAnalyticsObject] = window[window.GoogleAnalyticsObject] || function() {
+  (window[window.GoogleAnalyticsObject].q = window[window.GoogleAnalyticsObject].q || []).push(arguments);
+};
+
+//tealium universal tag - utag.sender.7110 ut4.0.202101071048, Copyright 2021 Tealium.com Inc. All Rights Reserved.
+
+try {
+  (function(id, loader) {
+    var u = {};
+    utag.o[loader].sender[id] = u;
+    // Start Tealium loader
+    // Please do not modify
+    if (utag.ut === undefined) { utag.ut = {}; } if (utag.ut.loader === undefined) { u.loader = function (o) { var a, b, c, l; a = document; if (o.type === "iframe") { b = a.createElement("iframe"); b.setAttribute("height", "1"); b.setAttribute("width", "1"); b.setAttribute("style", "display:none"); b.setAttribute("src", o.src); } else if (o.type === "img") { utag.DB("Attach img: " + o.src); b = new Image(); b.src = o.src; return; } else { b = a.createElement("script"); b.language = "javascript"; b.type = "text/javascript"; b.async = 1; b.src = o.src; } if (o.id) { b.id = o.id; } if (typeof o.cb === "function") { b.hFlag = 0; b.onreadystatechange = function () { if ((this.readyState === 'complete' || this.readyState === 'loaded') && !b.hFlag) { b.hFlag = 1; o.cb(); } }; b.onload = function () { if (!b.hFlag) { b.hFlag = 1; o.cb(); } }; } l = o.loc || "head"; c = a.getElementsByTagName(l)[0]; if (c) { utag.DB("Attach to " + l + ": " + o.src); if (l === "script") { c.parentNode.insertBefore(b, c); } else { c.appendChild(b); } } }; } else { u.loader = utag.ut.loader; }
+    if (utag.ut.typeOf === undefined) { u.typeOf = function(e) {return ({}).toString.call(e).match(/\s([a-zA-Z]+)/)[1].toLowerCase();};} else { u.typeOf = utag.ut.typeOf; }
+    // End Tealium loader
+    u.ev = {'view': 1, 'link': 1};
+    u.o = window[window.GoogleAnalyticsObject];
+    u.require_eh = false;
+    u.created = false;
+    // Perform operation for all trackers (params used differently for "set")
+    u.all = function(e, o, v, a, b) {
+      for (var i = 0; i < u.data.account.length; i++) {
+        var t = (u.data.name[i] ? u.data.name[i] + "." : "");
+        if (o === "event") {
+          u.o(t + e, o, v, a, b)
+        } else if (v) {
+          u.o(t + e, o, v)
+        } else {
+          u.o(t + e, o);
+        }
+      }
+    };
+    // this is a private function used for adding events to GA hits. must not be used for any other purpose
+    u.setHitData = function(g, a, b, f) {
+      for (var d in utag.loader.GV(u.data[a])) {
+        if (b && d.indexOf("enh_" + b + "-") !== 0) {
+          continue;
+        }
+        var idx = d.split("-")[1],
+            val = u.data[a][d];
+        if (u.typeOf(val) !== "array") {
+          g[idx] = val;
+        } else {
+          g[idx] = val[f];
+        }
+      }
+    };
+
+    //Add and event to GA {eventCategory : "", eventAction : "", eventValue : ""}
+    u.addEvent = function(v) {
+      if (typeof v.eventCategory == "undefined" || typeof v.eventAction == "undefined") {
+        utag.DB("GA event Category or Action is not set");
+        return;
+      }
+      if (isNaN(parseInt(v.eventValue))) {
+        utag.DB("GA event Value is not a number");
+        v.eventValue = null;
+      } else {
+        v.eventValue = parseInt(v.eventValue) || null;
+      }
+      u.data.ga_events.push(v);
+    };
+    // accepts an event type and the length of the product array, impression - true/false
+    u.addproduct = function(event_type, len, imp) {
+      var g = {}, i, j;
+
+      if (imp === true) {
+        for (i = 0; i < u.data.enh_impression_id.length; i++) {
+          g = {};
+          g.id = u.data.enh_impression_id[i];
+          g.name = (u.data.enh_impression_name[i] ? u.data.enh_impression_name[i] : u.data.enh_impression_id[i]);
+          g.brand = (u.data.enh_impression_brand[i] ? u.data.enh_impression_brand[i] : "");
+          g.variant = (u.data.enh_impression_variant[i] ? u.data.enh_impression_variant[i] : "");
+          g.category = (u.data.enh_impression_category[i] ? u.data.enh_impression_category[i] : "");
+          g.list = (u.data.enh_impression_list[i] ? u.data.enh_impression_list[i] : "");
+          g.price = (u.data.enh_impression_price[i] ? u.data.enh_impression_price[i] : "");
+          g.position = (u.data.enh_impression_position[i] ? u.data.enh_impression_position[i] : "");
+          u.setHitData(g, "enhecom_events", event_type, i);
+          u.all('ec:addImpression', g);
+        }
+      } else {
+        for (i = 0; i < len; i++) {
+          g = {};
+          if (u.data.autofill_params === "true") { //UI config & mapping to set default vals - default to true
+            for (j = 0; j < u.data.product_id.length; j++) {
+              u.data.product_name[j] = u.data.product_name[j] || u.data.product_id[j];
+              u.data.product_unit_price[j] = u.data.product_unit_price[j] || "1.00";
+              u.data.product_quantity[j] = u.data.product_quantity[j] || "1";
+            }
+          }
+          g.id = u.data.product_id[i];
+          g.name = (u.data.product_name[i] ? u.data.product_name[i] : "");
+          g.brand = (u.data.product_brand[i] ? u.data.product_brand[i] : "");
+          g.variant = (u.data.product_variant[i] ? u.data.product_variant[i] : "");
+          g.category = (u.data.product_category[i] ? u.data.product_category[i] : "");
+          g.price = (u.data.product_unit_price[i] ? u.data.product_unit_price[i] : "");
+          g.quantity = (u.data.product_quantity[i] ? u.data.product_quantity[i] : "");
+          g.coupon = (u.data.product_discount[i] ? u.data.product_discount[i] : "");
+          g.position = (u.data.product_position[i] ? u.data.product_position[i] : "");
+          u.setHitData(g, "enhecom_events", event_type, i);
+          u.all('ec:addProduct', g);
+        }
+      }
+    };
+
+    u.addpromo = function(action, event) {
+      var f, g;
+      	//BB Modifica template
+      if(!Array.isArray(u.data.enh_promo_id)){
+        u.data.enh_promo_id=[u.data.enh_promo_id];
+        u.data.enh_promo_name=[u.data.enh_promo_name];
+        u.data.enh_promo_creative=[u.data.enh_promo_creative];
+        u.data.enh_promo_position=[u.data.enh_promo_position];
+      }
+      //Fine BB Modifica template
+      for (f = 0; f < u.data.enh_promo_id.length; f++) {
+        g = {};
+	g.id = u.data.enh_promo_id[f];
+	g.name = (u.data.enh_promo_name[f] ? u.data.enh_promo_name[f] : u.data.enh_promo_id[f]);
+	g.creative = (u.data.enh_promo_creative[f] ? u.data.enh_promo_creative[f] : "");
+	g.position = (u.data.enh_promo_position[f] ? u.data.enh_promo_position[f] : "");		
+        u.all('ec:addPromo', g);
+      }
+      if (action === "promo_click" && event === "link") {
+        u.all('ec:setAction', u.data.enh_action);
+        u.all('send', 'event', 'Internal Promotions', g.id+"|"+g.name, g.position+"|"+g.creative);
+      }
+    };
+    u.initTracker = function() {
+      var c;
+      if (!u.created) {
+        u.created = true;
+        for (f = 0; f < u.data.account.length; f++) {
+          c = {};
+          if (u.data.siteSpeedSampleRate) {c.siteSpeedSampleRate = parseInt(u.data.siteSpeedSampleRate);}
+          if (u.data.sampleRate) {c.sampleRate = parseInt(u.data.sampleRate);}
+          c.cookieDomain = u.data.cookieDomain;
+          if (u.data.cookieExpires || u.data.cookieExpires === "0") {c.cookieExpires = parseInt(u.data.cookieExpires);}
+          if (u.data.legacyCookieDomain) {c.legacyCookieDomain = u.data.legacyCookieDomain;}
+          c.allowLinker = u.data.allowLinker;
+          if (typeof u.data.name[f] !== "undefined" && u.data.name[f] !== "") {c.name = u.data.name[f];}
+          u.o("create", u.data.account[f], c);
+        }
+
+        if (u.data.optimizely === "true") { window.optimizely = window.optimizely || []; window.optimizely.push(['activateUniversalAnalytics']);}
+      }
+    };
+    window.utag.tagsettings  = window.utag.tagsettings || {};
+    window.utag.tagsettings.gua =  window.utag.tagsettings.gua  || {};
+    window.utag.tagsettings.gua.trackernames =  window.utag.tagsettings.gua.trackernames  || 0;
+
+      u.map={"prod_action":"enh_action","prod_variant":"product_variant","imp_id":"enh_impression_id","imp_name":"enh_impression_name","imp_category":"enh_impression_category","imp_brand":"enh_impression_brand","imp_price":"enh_impression_price","imp_list":"enh_impression_list","imp_position":"enh_impression_position","imp_variant":"enh_impression_variant","promo_id":"enh_promo_id","promo_name":"enh_promo_name","ext_promo_creative":"enh_promo_creative","promo_position":"enh_promo_position","promo_action":"enh_action","event_category":"eventCategory","event_action":"eventAction","event_label":"eventLabel","event_value":"eventValue","prod_list":"product_action_list","prod_position":"product_position","cust_id_mylm":"pageview-dimension76,link-dimension76,pageview-dimension1,link-dimension1","cust_id_idea":"pageview-dimension2,link-dimension2","cust_id_account":"pageview-dimension3,link-dimension3","type_registration":"pageview-dimension4,link-dimension4","form_field":"link-dimension5","form_name":"link-dimension6","form_field_error":"link-dimension7","ga_cart_empty":"dimension8","ga_cart_empty_store":"dimension9","prod_mainprod":"enh_detail-dimension9,enh_product_add-dimension9,enh_product_checkout-dimension9,enh_product_click-dimension9,enh_product_impression-dimension9,enh_product_purchase-dimension9,enh_product_remove-dimension9,enh_purchase-dimension9","page_layout":"dimension10","navigation_store":"pageview-dimension11,link-dimension11,pageview-dimension86,link-dimension86","cp.utag_main_v_id":"dimension12","cp.utag_main_ses_id":"dimension13","hit_timestamp":"dimension14","cust_tipo":"pageview-dimension15,link-dimension15","cust_sesso":"pageview-dimension16,link-dimension16","cust_cap":"pageview-dimension17,link-dimension17","cust_negozio":"pageview-dimension18,link-dimension18","cust_tipologia_abitazione":"pageview-dimension19,link-dimension19","cust_anno_di_nascita":"pageview-dimension20,link-dimension20","cust_attivita":"pageview-dimension21,link-dimension21","cust_situazione_familiare":"pageview-dimension22,link-dimension22","cust_numero_figli":"pageview-dimension23,link-dimension23","cust_stato_attuale":"pageview-dimension24,link-dimension24","cust_abitazione_inizio_anno":"pageview-dimension25,link-dimension25","cust_abitazione_mq":"pageview-dimension26,link-dimension26","cust_abitazione_spazi":"pageview-dimension27,link-dimension27","cust_come_conosciuto_idea":"pageview-dimension28,link-dimension28","page_name_lv1":"pageview-dimension29,link-dimension29,pageview-contentGroup4","page_name_lv2":"pageview-dimension30,link-dimension30","page_name_lv3":"pageview-dimension31,link-dimension31","page_name_lv4":"pageview-dimension32,link-dimension32","page_name_lv5":"pageview-dimension33,link-dimension33","page_name_lv1_prev":"pageview-dimension34,link-dimension34","stack_step":"pageview-dimension35","qp.utm_customer":"pageview-dimension36","ext_imp_availability":"enh_product_impression-dimension37","ext_prod_availability":"enh_detail-dimension37,enh_product_add-dimension37,enh_product_checkout-dimension37,enh_purchase-dimension37,enh_product_purchase-dimension37,enh_product_remove-dimension37","ext_prod_new":"enh_detail-dimension38,enh_product_add-dimension38,enh_product_checkout-dimension38,enh_product_click-dimension38,enh_product_impression-dimension38,enh_product_purchase-dimension38,enh_purchase-dimension38,enh_product_remove-dimension38","prod_campaign":"enh_detail-dimension39,enh_product_add-dimension39,enh_product_checkout-dimension39,enh_product_click-dimension39,enh_product_impression-dimension39,enh_product_purchase-dimension39,enh_purchase-dimension39,enh_product_remove-dimension39","prod_univers":"enh_detail-dimension40,enh_product_add-dimension40,enh_product_checkout-dimension40,enh_product_click-dimension40,enh_product_impression-dimension40,enh_product_purchase-dimension40,enh_product_refund-dimension40,enh_product_remove-dimension40,enh_purchase-dimension40,enh_refund-dimension40","imp_univers":"enh_product_impression-dimension40","imp_family":"enh_product_impression-dimension41","prod_family":"enh_detail-dimension41,enh_product_add-dimension41,enh_product_checkout-dimension41,enh_product_click-dimension41,enh_product_purchase-dimension41,enh_product_refund-dimension41,enh_product_remove-dimension41,enh_purchase-dimension41,enh_refund-dimension41","prod_gamma":"enh_detail-dimension42,enh_product_add-dimension42,enh_product_checkout-dimension42,enh_product_click-dimension42,enh_product_impression-dimension42,enh_product_purchase-dimension42,enh_product_refund-dimension42,enh_product_remove-dimension42,enh_purchase-dimension42,enh_refund-dimension42","ext_prod_bundle":"enh_detail-dimension43,enh_product_add-dimension43,enh_product_checkout-dimension43,enh_product_click-dimension43,enh_product_impression-dimension43,enh_product_purchase-dimension43,enh_product_refund-dimension43,enh_product_remove-dimension43,enh_purchase-dimension43,enh_refund-dimension43","prod_checkout_type":"enh_product_checkout-dimension44,enh_product_add-dimension71,enh_product_purchase-dimension44,enh_product_remove-dimension71","trans_checkout_type":"pageview-dimension45","checkout_ritiro":"pageview-dimension46","checkout_addr_inv":"pageview-dimension47","checkout_addr_ship":"pageview-dimension48","ext_prod_name_w":"link-dimension49","ext_prod_id_w":"link-dimension50","ext_prod_category_w":"link-dimension51","ext_prod_brand_w":"link-dimension52","ext_prod_variant_w":"link-dimension53","ext_prod_universo_w":"link-dimension54","ext_prod_family_w":"link-dimension55","ext_prod_gamma_w":"link-dimension56","ext_prod_new_w":"link-dimension57","ext_prod_availability_w":"link-dimension58","ext_prod_campaign_w":"link-dimension59","ext_prod_bundle_w":"link-dimension60","ut.env":"dimension61","ext_page_name":"page,dimension62,title","ext_filter_value":"pageview-dimension63,link-dimension63","ext_prod_checkout_type":"dimension65","ext_prod_availability_cd66":"dimension66","page_name_lv6":"pageview-dimension67,link-dimension67","page_name_lv7":"pageview-dimension68,link-dimension68","ext_tealium_profile_version":"dimension69","error_details":"pageview-dimension70","dom.url":"dimension72","ext_programma_idea_piu":"pageview-dimension73,link-dimension73","cust_scadenza_idea":"pageview-dimension74,link-dimension74","flusso_idea":"pageview-dimension75,link-dimension75","ext_filter_name":"pageview-dimension77,link-dimension77","checkout_option":"pageview-dimension78,enh_checkout_option","ext_disp_prod_lvpagina":"enh_detail-dimension79,enh_product_add-dimension79,enh_product_checkout-dimension79,enh_purchase-dimension79,enh_product_purchase-dimension79,enh_product_remove-dimension79","ext_disp_imp_lvpagina":"enh_product_impression-dimension79","ext_campagne_interne":"dimension80","consegna":"pageview-dimension85","checkout_delivery_method":"pageview-dimension87","trans_shipping_method":"pageview-dimension87","checkout_delivery_cost":"pageview-dimension88","trans_shipping":"pageview-dimension88","checkout_delivery_date":"pageview-dimension89","prod_add_type":"enh_product_add-dimension90","ext_total_revenue":"pageview-dimension91","idea_registration":"pageview-metric1","idea_registration_start":"pageview-metric2","mylm_registration":"pageview-metric3","mylm_registration_start":"pageview-metric4","newsletter_registration":"pageview-metric5","newsletter_registration_start":"pageview-metric6","confirmation_registration":"pageview-metric7","flag_form_field_valid_ok":"link-metric8","flag_form_field_valid_ko":"link-metric9","prod_rating":"enh_detail-metric10,enh_product_add-metric10,enh_product_checkout-metric10,enh_product_click-metric10,enh_product_impression-metric10,enh_product_purchase-metric10,enh_product_remove-metric10","prod_sconto":"enh_detail-metric11,enh_product_add-metric11,enh_product_checkout-metric11,enh_product_click-metric11,enh_product_purchase-metric11,enh_product_remove-metric11","imp_sconto":"enh_product_impression-metric11","prod_premiumprice":"enh_product_purchase-metric12","prod_ideapiu":"enh_detail-metric13,enh_product_checkout-metric13,enh_product_click-metric13,enh_product_impression-metric13,enh_product_add-metric13,enh_product_purchase-metric13,enh_product_remove-metric13","prod_puntiomaggio":"enh_detail-metric14,enh_product_add-metric14,enh_product_checkout-metric14,enh_product_click-metric14,enh_product_impression-metric14,enh_product_purchase-metric14,enh_product_remove-metric14","trans_vantaggio":"pageview-metric15","ext_wishlist_add":"link-metric16","ext_wishlist_remove":"link-metric17","ext_wishlist_print":"link-metric18","ext_prod_price_w":"link-metric19","ext_prod_rating_w":"link-metric20","ext_prod_sconto_w":"link-metric21","ext_prod_puntiomaggio_w":"link-metric22","ext_prod_ideapiu_w":"link-metric23","search_results":"pageview-metric24","ext_filter_present":"pageview-metric25,link-metric25","prod_serviziprice":"enh_product_purchase-metric26,enh_purchase-metric26","gallery_pagenumber":"pageview-metric27,pageview-dimension93","gallery_pagetotal":"pageview-metric28,pageview-dimension94","gallery_producttotal":"pageview-metric29,pageview-dimension95","ga_utm_source":"campaignSource","ga_utm_medium":"campaignMedium","cust_settore_azienda":"pageview-dimension16,link-dimension16","search_keyword":"q","checkout_step":"enh_checkout_step","ext_cg_1":"contentGroup1","ext_cg_2":"contentGroup2","ext_cg_3":"contentGroup3","shopping_behaviour":"dimension92","ga_uid":"uid","trans_promocode":"pageview-dimension97","checkout_delivery_day":"pageview-dimension96","contatore_nav":"pageview-metric18","sito_attuale":"pageview-dimension21","sito_provenienza":"pageview-dimension19","last_5_site":"pageview-dimension22","lm_site_referrer":"pageview-dimension23","registration_target":"pageview-dimension24"};
+  u.extend=[function(a,b){
+if (b.page_load == "1") {
+  return false;
+}
+},
+function(a,b){
+if (b.from == "app") {
+  return false;
+}
+},
+function(a,b){
+if (b.search_type == "suggerimento" && b.search_keyword.length <3 ) {
+  return false;
+}
+
+},
+function(a,b){
+if (b.property_ga_already_fired == "1") {
+  return false;
+}
+},
+function(a,b){ try{ if((b['event_type'].toString().toLowerCase()=='smart banner'.toLowerCase()&&b['event_action'].toString().toLowerCase()=='view'.toLowerCase())){b['event_non_interaction']='1'} } catch(e){ utag.DB(e); }  }];
+
+    u.send = function(a, b) {
+      if (u.ev[a] || u.ev.all !== undefined) {
+        //##UTENABLEDEBUG##utag.DB("send:##UTID##");
+        u.o = window[window.GoogleAnalyticsObject];
+        b.ga_events = b.ga_events || []; // this has been superseded by u.data.ga_events. keeping for backward compatibility.
+        var c, d, e, f, g, tn;
+
+        if (u.data && u.data.name) {tn = u.data.name;}
+
+        u.data = {
+          "qsp_delim": "&",
+          "kvp_delim": "=",
+          "base_url": "",
+          "a": a,
+          "cookieDomain": "" || utag.loader.lh(),
+          "name": tn || "ga_gdpr",
+          "account": "UA-33701339-1",
+          "anonymizeIp": ("false" === "true" ),
+          "allowLinker": ("false" === "true"),
+          "crossDomainTrack": "",
+          "enhancedLinkAttribution": "false",
+          "enhancedecommerce": "true",
+          "displayfeatures": "false",
+          "screenView": "false",
+          // Enhanced E-Commerce
+          "enh_action": "",
+          "enh_event_cb": "",
+          "enh_checkout_step": "",
+          "enh_checkout_option": "",
+          "product_action_list": "",
+          "product_variant": [],
+          "enh_impression_id": [],
+          "enh_impression_name": [],
+          "enh_impression_price": [],
+          "enh_impression_category": [],
+          "enh_impression_brand": [],
+          "enh_impression_variant": [],
+          "enh_impression_list": [],
+          "enh_impression_position": [],
+          "enh_promo_id": [],
+          "enh_promo_name": [],
+          "enh_promo_creative": [],
+          "enh_promo_position": [],
+          // E-Commerce Vars
+          "id": "",
+          "product_id": [],
+          "product_name": [],
+          "product_brand": [],
+          "product_category": [],
+          "product_quantity": [],
+          "product_unit_price": [],
+          "product_discount": [],
+          "product_position": [],
+          "optimizely" : "false",
+          "init_before_extensions" : "false",
+          "ga_events" : [],
+          "sessionControl" : ""
+        };
+
+        if (u.data.init_before_extensions === "true") {
+          u.initTracker();
+        }
+
+        for(c=0;c<u.extend.length;c++){try{d=u.extend[c](a,b);if(d==false)return}catch(e){}};
+
+        c = [];
+
+        // Start Mapping
+        for (d in utag.loader.GV(u.map)) {
+          if (b[d] !== undefined && b[d] !== "") {
+            e = u.map[d].split(",");
+            for (f = 0; f < e.length; f++) {
+              if (e[f].indexOf("a.") === 0) {
+                u.data["a"][e[f].substring(2)] = b[d];
+              } else {
+		//TEMPLATE MODIFICA TEMPLATE
+		if(b[d] != "not-set"){
+		  u.data[e[f]] = b[d];
+		}else{
+		  u.data[e[f]] = undefined;
+		}
+		//FINE TEMPLATE MODIFICA TEMPLATE
+              }
+            }
+          }
+        }
+        // End Mapping
+        // handle mapped events. check b.ga_events for backward compatibility with the old template. new users should always use the mapping toolbox to set ga_events
+        if (u.typeOf(u.data.ga_events) === "array" && u.typeOf(b.ga_events) === "array") {
+          if ( u.data.ga_events.length === 0 && b.ga_events.length > 0) {
+            u.data.ga_events = b.ga_events;
+          } else if (u.data.ga_events.length > 0 && b.ga_events.length > 0) {
+            u.data.ga_events = u.data.ga_events.concat(b.ga_events); // if we have both ga_events AND u.data.ga_events, then join them together so we don't lose anything
+          }
+        }
+
+        u.data.order_id = u.data.order_id || b._corder || "";
+        u.data.order_total = u.data.order_total || b._ctotal || "";
+        u.data.order_shipping = u.data.order_shipping || b._cship || "";
+        u.data.order_tax = u.data.order_tax || b._ctax || "";
+        u.data.order_store = u.data.order_store || b._cstore || "";
+        u.data.order_currency = u.data.order_currency || b._ccurrency || "";
+        u.data.order_coupon_code = u.data.order_coupon_code || b._cpromo || "";
+        if (u.data.product_id.length === 0 && b._cprod !== undefined) { u.data.product_id = b._cprod.slice(0);}
+        if (u.data.product_name.length === 0 && b._cprodname !== undefined) { u.data.product_name = b._cprodname.slice(0);}
+        if (u.data.product_brand.length === 0 && b._cbrand !== undefined) { u.data.product_brand = b._cbrand.slice(0); }
+        if (u.data.product_category.length === 0 && b._ccat !== undefined) { u.data.product_category = b._ccat.slice(0); }
+        if (u.data.product_quantity.length === 0 && b._cquan !== undefined) { u.data.product_quantity = b._cquan.slice(0); }
+        if (u.data.product_unit_price.length === 0 && b._cprice !== undefined) { u.data.product_unit_price = b._cprice.slice(0); }
+        if (u.data.product_discount.length === 0 && b._cpdisc !== undefined) { u.data.product_discount = b._cpdisc.slice(0); }
+
+        if (typeof u.data.account === "string") {u.data.account = u.data.account.replace(/\s/g, "").split(",");}
+        // if there is no tracker name defined, but there are multiple trackers, auto-generate one with the name tealium_[1|2|3|4 etc.]
+        if (typeof u.data.name === "string" && u.data.name !== "") {u.data.name = u.data.name.replace(/\s/g, "").split(",");}
+
+        if (!u.data.name || u.data.name.length !== u.data.account.length) {
+          var start = u.data.name.length !== u.data.account.length ? u.data.name.length : 0;
+          tn = utag.tagsettings.gua.trackernames;
+          u.data.name = u.data.name || [];
+          for (i = start; i < u.data.account.length; i++) {
+            u.data.name.push("tealium_" + (i + tn));
+          }
+          utag.tagsettings.gua.trackernames = tn + i;
+        }
+
+        if (u.data.init_before_extensions !== "true") {
+          u.initTracker();
+        }
+	/* BitBang - add Google Optimize in QA4 start */
+	/*
+	if (utag.data["dom.url"].indexOf("www-qa4.lm.byte-code.com")>-1){
+	  u.all("require", "GTM-KTN4SMQ");
+	}
+*/
+	/* BitBang - add Google Optimize in QA4 end */
+        if (u.data.enhancedecommerce === "true" && !u.require_eh) {
+          u.require_eh = true;
+          u.all("require", "ec");
+        }
+
+        // mobile
+        u.data.app_id = u.data.app_id || u.data.appId || b.app_id;
+        u.data.app_name = u.data.app_name || u.data.appName || b.app_name;
+        u.data.app_version = u.data.app_version || u.data.appVersion || b.app_version;
+        u.data.app_rdns = u.data.app_rdns || u.data.appInstallerId || b.app_rdns;
+        u.data.screen_title = u.data.screen_title || u.data.screenName || b.screen_title;
+
+        //changed to allow app information to be sent on events and page views
+        if (u.data.app_id || u.data.app_name) {
+          g = {};
+          g.appName = u.data.app_name;
+          g.appId = u.data.app_id || "";
+          g.appVersion = u.data.app_version;
+          g.appInstallerId = u.data.app_rdns;
+          u.all("set", g);
+        }
+
+        //Moved out of screenview block as valid for all types
+        u.data.exception_reason = u.data.exception_reason || b.exception_reason;
+        if (u.data.exception_reason) {
+          g = {};
+          g.exDescription = u.data.exception_reason;
+          g.exFatal = true;
+          u.all("send", "exception", g);
+        }
+
+        if (u.data.allowLinker === true && u.data.crossDomainTrack !== undefined && typeof u.data.crossDomainTrack === "string") {
+          u.all("require", "linker");
+          u.data.crossDomainTrack = u.data.crossDomainTrack.split(",");
+          u.all("linker:autoLink", u.data.crossDomainTrack);
+        }
+
+        if (u.data.anonymizeIp) {u.all("set", 'anonymizeIp', true);}
+        if (u.data.uid) {u.all("set", "&uid", u.data.uid);}
+        if (u.data.page) {u.all("set", "page", u.data.page);}
+        if (u.data.title) {u.all("set", "title", u.data.title);}
+        if (u.data.location) {u.all("set", "location", u.data.location);}
+        if (u.data.campaignName) {u.all("set", "campaignName", u.data.campaignName);}
+        if (u.data.campaignSource) {u.all("set", "campaignSource", u.data.campaignSource);}
+        if (u.data.campaignMedium) {u.all("set", "campaignMedium", u.data.campaignMedium);}
+        if (u.data.campaignContent) {u.all("set", "campaignContent", u.data.campaignContent);}
+        if (u.data.campaignKeyword) {u.all("set", "campaignKeyword", u.data.campaignKeyword);}
+        if (u.data.displayfeatures === "true" || u.data.displayfeatures === true) {u.all("require", "displayfeatures");}
+
+        u.data.transaction_events = {};
+        u.data.pageview_events = {};
+        u.data.link_events = {};
+        u.data.enhecom_events = {};
+        for (d in utag.loader.GV(u.data)) {
+          if (d.indexOf("-") > -1 && (d.indexOf("metric") > -1 || d.indexOf("dimension") > -1 || d.indexOf("contentGroup") > -1)) {
+            //new functionality to accept different mapping types
+            //u.all("set", d, u[d]);
+            if (d.indexOf("transaction-") === 0) {
+              u.data.transaction_events[d] = u.data[d];
+            } else if (d.indexOf("pageview-") === 0) {
+              u.data.pageview_events[d] = u.data[d];
+            } else if (d.indexOf("link-") === 0) {
+              u.data.link_events[d] = u.data[d];
+            } else if (u.data.enhancedecommerce === "true" && d.indexOf("enh_") === 0) {
+              u.data.enhecom_events[d] = u.data[d];
+            }
+          } else if (d.indexOf("metric") === 0 || d.indexOf("dimension") === 0 || d.indexOf("contentGroup") === 0) {
+            //old functionality
+            u.all("set", d, u.data[d]);
+          }
+        }
+
+        // Enhanced Link Attribution
+        if (u.data.enhancedLinkAttribution === "true") {
+          u.all("require", "linkid", "linkid.js");
+        }
+
+        u.data.order_id = (u.data.order_id ? u.data.order_id : u.data.id);
+
+        //  begin Enhanced Ecommerce block
+        if (u.data.enhancedecommerce === "true") {
+
+          // set currency if mapped
+          u.all("set", '&cu', (u.data.currency ? u.data.currency : u.data.order_currency));
+          // ENH: REFUND start
+          if (u.data.order_id && u.data.enh_action === "refund") {
+            if (u.data.order_id instanceof Array && u.data.order_id.length > 0) {
+              u.data.order_id = u.data.order_id[0];
+            }
+            for (f = 0; f < u.data.product_id.length; f++) {
+              g = {};
+              g.id = u.data.product_id[f];
+              g.quantity = (u.data.product_quantity[f] ? u.data.product_quantity[f] : "1");
+              u.setHitData(g, "enhecom_events", "product_refund", f);
+              u.all('ec:addProduct', g);
+            }
+
+            g = {};
+            g.id = u.data.order_id;
+            u.setHitData(g, "enhecom_events", "refund");
+            u.all('ec:setAction', 'refund', g);
+            // ENH: REFUND end
+          }
+          //ENH: ORDER start
+          else if (u.data.order_id) {
+            if (u.data.order_id instanceof Array && u.data.order_id.length > 0) {
+              u.data.order_id = u.data.order_id[0];
+            }
+            u.addproduct("product_purchase", u.data.product_id.length, false);
+            g = {};
+            g.id = u.data.order_id;
+            g.affiliation = (u.data.affiliation ? u.data.affiliation : u.data.order_store);
+            g.revenue = (u.data.revenue ? u.data.revenue : u.data.order_total);
+            g.shipping = (u.data.shipping ? u.data.shipping : u.data.order_shipping);
+            g.tax = (u.data.tax ? u.data.tax : u.data.order_tax);
+            g.coupon = (u.data.coupon ? u.data.coupon : u.data.order_coupon_code);
+            u.setHitData(g, "enhecom_events", "purchase");
+            u.all('ec:setAction', 'purchase', g);
+            // ENH: ORDER end
+          }
+          // ENH: PRODUCT CLICK start
+          else if (u.data.enh_action === "product_click" && u.data.a === "link") {
+            u.addproduct("product_click", 1, false);
+            u.all('ec:setAction', 'click', {list: u.data.product_action_list});
+            u.all('send', 'event', 'product_click', b.prod_name[0], b.prod_id[0]);
+            // ENH: PRODUCT CLICK end
+          }
+          // ENH: DETAIL start
+          else if (u.data.enh_action === "detail") {
+            u.addproduct("detail", 1, false);
+            //decommentare se si vuole la "pal" su detail
+	    //u.all("ec:setAction", "detail", {list: u.data.product_action_list});
+	    //
+	    u.all("ec:setAction", "detail");
+            // ENH: DETAIL end
+          }
+          // ENH: PRODUCT ADD start
+          else if (u.data.enh_action === "add") {
+            u.addproduct("product_add", u.data.product_id.length, false);
+            // does not support custom metrics and dimensions! (ref: https://developers.google.com/analytics/devguides/collection/protocol/v1/parameters#enhanced-ecomm)
+            u.all('ec:setAction', 'add', {list: u.data.product_action_list[0]});
+	    //u.all('ec:setAction', 'add');
+            if (u.data.a === "link") {
+              u.all('send', 'event', 'product_aggiunta a carrello', b.prod_name[0], b.prod_id[0]);
+            }
+            // ENH: PRODUCT ADD end
+          }
+          // ENH: PRODUCT REMOVE start
+          else if (u.data.enh_action === "remove") {
+            u.addproduct("product_remove", u.data.product_id.length, false);
+            // does not support custom metrics and dimensions! (ref: https://developers.google.com/analytics/devguides/collection/protocol/v1/parameters#enhanced-ecomm)
+            u.all('ec:setAction', 'remove');
+            if (u.data.a === "link") {
+              u.all('send', 'event', 'product_rimuovi dal carrello', b.prod_name[0], b.prod_id[0]);
+            }
+            // ENH: PRODUCT REMOVE end
+          }
+          // ENH: CHECKOUT start
+          else if (u.data.enh_action === "checkout") {
+            u.addproduct("product_checkout", u.data.product_id.length, false);
+            g = {};
+            // does not support custom metrics and dimensions! (ref: https://developers.google.com/analytics/devguides/collection/protocol/v1/parameters#enhanced-ecomm)
+            g.step = u.data.enh_checkout_step || "1";
+            g.option = u.data.enh_checkout_option;
+            u.all('ec:setAction', u.data.enh_action, g);
+            // ENH: CHECKOUT end
+          }
+          // ENH: CHECKOUT OPTION start
+          if (u.data.enh_action === "checkout_option" && u.data.a === "link") {
+            g = {};
+            // does not support custom metrics and dimensions! (ref: https://developers.google.com/analytics/devguides/collection/protocol/v1/parameters#enhanced-ecomm)
+            g.step = u.data.enh_checkout_step || "1";
+            g.option = u.data.enh_checkout_option;
+            u.all('ec:setAction', u.data.enh_action, g);
+            u.all('send', 'event', 'Checkout', 'Option', {'hitCallback': window[u.data.enh_event_cb]});
+            // ENH: CHECKOUT OPTION end
+          }
+          // ENH: ADD IMPRESSION start
+          if (u.data.enh_impression_id) {
+            u.addproduct("product_impression", u.data.enh_impression_id.length, true);
+            // ENH: ADD IMPRESSION end
+          }
+          // ENH: ADD PROMO start
+          // does not support custom metrics and dimensions! (ref: https://developers.google.com/analytics/devguides/collection/protocol/v1/parameters#enhanced-ecomm)
+          if (u.data.enh_promo_id) {
+            // if you are sending a promo on a "link", you must make sure to send a GA event alongside it (i.e. map event_action and event_category)
+            u.addpromo(u.data.enh_action, u.data.a);
+
+            // ENH: ADD PROMO end
+          }
+          // ENH: SEND PAGEVIEW & ASSOCIATED EVENTS
+          g = {};
+
+          if (u.data.order_id) {
+            u.setHitData(g, "transaction_events");
+          }
+
+          u.setHitData(g, "pageview_events");
+
+          //Session Control
+          //Used to control the session duration. A value of 'start' forces a new session to start with this hit and 'end' forces the current session to end with this hit. All other values are ignored.
+          if (u.data.sessionControl === "start" || u.data.sessionControl === "end"){
+            g.sessionControl = u.data.sessionControl;
+          }
+
+          if (u.data.screenView === "true" || u.data.screenView === true) {
+            g.screenName = u.data.screen_title || "";
+            u.all("send", "screenview", g);
+          } else if (u.data.a === "view") {
+            g.hitType = "pageview";
+            u.all("send", g); // Send page view request
+          }
+          // end enhanced e-commerce block
+        } else if (u.data.a === "view") {
+          // begin standard page view block (enhanced e-commerce disabled)
+          g = {};
+          u.setHitData(g, "pageview_events");
+
+          if (u.data.sessionControl === "start" || u.data.sessionControl === "end"){
+            g.sessionControl = u.data.sessionControl;
+          }
+
+          if (u.data.screenView === "true" || u.data.screenView === true) {
+            g.screenName = u.data.screen_title || "";
+            u.all("send", "screenview", g);
+          } else {
+            g.hitType = "pageview";
+            u.all("send", g); // Send page view request
+          }
+
+          if (u.data.order_id && !(u.data.order_id instanceof Array)) {
+            u.all("require", "ecommerce", "ecommerce.js");
+            g = {};
+            u.setHitData(g, "transaction_events");
+            g.id = u.data.order_id;
+            g.affiliation = (u.data.affiliation ? u.data.affiliation : u.data.order_store);
+            g.revenue = (u.data.revenue ? u.data.revenue : u.data.order_total);
+            g.shipping = (u.data.shipping ? u.data.shipping : u.data.order_shipping);
+            g.tax = (u.data.tax ? u.data.tax : u.data.order_tax);
+            g.currency = (u.data.currency ? u.data.currency : u.data.order_currency);
+            u.all('ecommerce:addTransaction', g);
+
+            for (f = 0; f < u.data.product_id.length; f++) {
+              g = {};
+              g.id = u.data.order_id;
+              g.sku = u.data.product_id[f];
+              g.name = (u.data.product_name[f] ? u.data.product_name[f] : u.data.product_id[f]);
+              g.category = (u.data.product_category[f] ? u.data.product_category[f] : "");
+              g.price = (u.data.product_unit_price[f] ? u.data.product_unit_price[f] : "1.00");
+              g.quantity = (u.data.product_quantity[f] ? u.data.product_quantity[f] : "1");
+              u.setHitData(g, "transaction_events");
+              u.all('ecommerce:addItem', g);
+            }
+            u.all('ecommerce:send');
+          } else if (u.data.order_id instanceof Array && u.data.order_id.length > 0) {
+            u.all("require", "ecommerce", "ecommerce.js");
+            // an array of order ids will fire multiple transacations
+            var lastindex = 0;
+            for (f = 0; f < u.data.order_id.length; f++) {
+
+              if (f === u.data.order_id.length - 1 || (u.data.order_id[f] !== u.data.order_id[f + 1])) {
+                g = {};
+                u.setHitData(g, "transaction_events");
+                g.id = u.data.order_id[f];
+                g.affiliation = (u.data.affiliation && typeof u.data.affiliation[f] !== "undefined" ? u.data.affiliation[f] : u.data.order_store);
+                g.revenue = (u.data.revenue && typeof u.data.revenue[f] !== "undefined" ? u.data.revenue[f] : u.data.order_total);
+                g.shipping = (u.data.shipping && typeof u.data.shipping[f] !== "undefined" ? u.data.shipping[f] : u.data.order_shipping);
+                g.tax = (u.data.tax && typeof u.data.tax[f] !== "undefined" ? u.data.tax[f] : u.data.order_tax);
+                g.currency = (u.data.currency ? u.data.currency : u.data.order_currency);
+                u.all('ecommerce:addTransaction', g);
+
+                for (e = lastindex; e < f + 1; e++) {
+                  g = {};
+                  g.id = u.data.order_id[f];
+                  g.sku = u.data.product_id[e];
+                  g.name = (u.data.product_name[e] ? u.data.product_name[e] : u.data.product_id[e]);
+                  g.category = (u.data.product_category[e] ? u.data.product_category[e] : "");
+                  g.price = (u.data.product_unit_price[e] ? u.data.product_unit_price[e] : "1.00");
+                  g.quantity = (u.data.product_quantity[e] ? u.data.product_quantity[e] : "1");
+                  u.setHitData(g, "transaction_events");
+                  u.all('ecommerce:addItem', g);
+                }
+                lastindex = f + 1;
+              }
+            }
+            u.all('ecommerce:send');
+          }
+          // end standard page view block
+        } else if (u.data.screenView === "true" || u.data.screenView === true) {
+          g = {};
+          g.screenName = u.data.screen_title || "";
+          u.all("send", "screenview", g);
+        }
+        // begin event logic
+        if (u.data.eventCategory && u.data.eventAction) {
+          g = {};
+          u.setHitData(g, "link_events");
+          g.hitType = "event";
+          g.eventCategory = u.data.eventCategory;
+          if (u.data.nonInteraction) {g.nonInteraction = 1;}
+          g.eventAction = u.data.eventAction;
+          if (u.data.eventLabel) {
+            g.eventLabel = u.data.eventLabel;
+          }
+          if (typeof u.data.eventValue !== "undefined" && u.data.eventValue !== "") {
+            g.eventValue = u.data.eventValue;
+          }
+          // send screenName on event call when mapped
+          if (u.data.screenView === "true" || u.data.screenView === true) {
+            g.screenName = u.data.screen_title || "";
+          }
+          if (u.data.sessionControl === "start" || u.data.sessionControl === "end"){
+            g.sessionControl = u.data.sessionControl;
+          }
+	  //bitbang modifica call type
+	  u.data.dimension92= u.data.dimension92? u.data.dimension92.replace("page", "event"): "";	  
+	  //fine modifica bitbang call type
+          u.all("send", g);
+          // clear variables after each event
+          u.data.eventCategory = u.data.eventAction = u.data.eventLabel = u.data.eventValue = "";
+        }
+
+        for (e = 0; e < u.data.ga_events.length; e++) {
+          g = {};
+          u.setHitData(g, "link_events");
+          g.hitType = "event";
+          g.eventCategory = u.data.ga_events[e].eventCategory;
+          g.eventAction = u.data.ga_events[e].eventAction;
+          g.eventLabel = u.data.ga_events[e].eventLabel;
+          g.eventValue = u.data.ga_events[e].eventValue;
+          if (u.data.ga_events[e].nonInteraction) {g.nonInteraction = 1;}
+          if (u.data.sessionControl === "start" || u.data.sessionControl === "end"){
+            g.sessionControl = u.data.sessionControl;
+          }
+          u.all("send", g);
+        }
+        // end event logic
+        if (u.data.socialNetwork && u.data.socialAction && u.data.socialTarget) {
+          g = {};
+          g.hitType = "social";
+          g.socialNetwork = u.data.socialNetwork;
+          g.socialAction = u.data.socialAction;
+          g.socialTarget = u.data.socialTarget;
+          u.all("send", g);
+          u.data.socialNetwork = u.data.socialAction = u.data.socialTarget = "";
+        }
+
+        if (u.data.timingCategory && u.data.timingVar && u.data.timingValue) {
+          g = {};
+          g.hitType = "timing";
+          g.timingCategory = u.data.timingCategory;
+          g.timingVar = u.data.timingVar;
+          g.timingValue = u.data.timingValue;
+          g.timingLabel = u.data.timingLabel || "";
+          u.all("send", g);
+        }
+
+        // Map account ID to ga-disable to disable tracking for that account
+        if (u.data["ga-disable"]) {
+          window["ga-disable-" + u.data["ga-disable"]] = true;
+        }
+
+        (function() {
+          var id = 'tealium-tag-7110';
+          if (document.getElementById(id)) { return;}
+          u.loader({"type": "script",  "src": '//www.google-analytics.com/analytics.js',  "loc": "script", "id": id });
+          u.o.l = 1 * new Date(); //This is required by Google. Current tiemstamp
+        })();
+
+        //##UTENABLEDEBUG##utag.DB("send:##UTID##:COMPLETE");
+      }
+    };
+    utag.o[loader].loader.LOAD(id);
+  }('62', 'leroymerlinit.main'));
+} catch (error) {
+  utag.DB(error);
+}
+//end tealium universal tag

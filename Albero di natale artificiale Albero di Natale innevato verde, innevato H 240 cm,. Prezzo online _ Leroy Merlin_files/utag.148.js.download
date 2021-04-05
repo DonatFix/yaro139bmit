@@ -1,0 +1,124 @@
+//~~tv:17011.20191018
+//~~tc: Adding "p-" prefix to Account Code if it is missing
+
+var _qevents = _qevents || [];
+
+//tealium universal tag - utag.sender.17011 ut4.0.202103020840, Copyright 2021 Tealium.com Inc. All Rights Reserved.
+try {
+  (function (id, loader) {
+    var u = {};
+    utag.o[loader].sender[id] = u;
+
+    // Please do not modify
+    if (utag.ut === undefined) { utag.ut = {}; }
+    // Start Tealium loader 4.35
+    if (utag.ut.loader === undefined) { u.loader = function (o) { var b, c, l, a = document; if (o.type === "iframe") { b = a.createElement("iframe"); o.attrs = o.attrs || { "height" : "1", "width" : "1", "style" : "display:none" }; for( l in utag.loader.GV(o.attrs) ){ b.setAttribute( l, o.attrs[l] ); } b.setAttribute("src", o.src); }else if (o.type=="img"){ utag.DB("Attach img: "+o.src); b=new Image();b.src=o.src; return; }else{ b = a.createElement("script");b.language="javascript";b.type="text/javascript";b.async=1;b.charset="utf-8"; for( l in utag.loader.GV(o.attrs) ){ b[l] = o.attrs[l]; } b.src = o.src; } if(o.id){b.id=o.id}; if (typeof o.cb=="function") { if(b.addEventListener) { b.addEventListener("load",function(){o.cb()},false); }else { /* old IE support */ b.onreadystatechange=function(){if(this.readyState=='complete'||this.readyState=='loaded'){this.onreadystatechange=null;o.cb()}}; } } l = o.loc || "head"; c = a.getElementsByTagName(l)[0]; if (c) { utag.DB("Attach to "+l+": "+o.src); if (l == "script") { c.parentNode.insertBefore(b, c); } else { c.appendChild(b) } } } } else { u.loader = utag.ut.loader; }
+    // End Tealium loader
+    // Start Tealium typeOf 4.35
+    if (utag.ut.typeOf === undefined) { u.typeOf = function(e) {return ({}).toString.call(e).match(/\s([a-zA-Z]+)/)[1].toLowerCase();};} else { u.typeOf = utag.ut.typeOf; }
+    // End Tealium typeOf
+
+    u.ev = {"view" : 1, "link" : 1};
+    u.initialized = false;
+    u.scriptrequested = false;
+    u.queue = [];
+
+      u.map={"_sm_148_1":"qacct"};
+  u.extend=[function(a,b){
+try{b['_sm_148_1']="p-Yt_4zeGLRgARf";}catch(e){utag.DB(e);}
+},
+function(a,b){
+if (b.page_load == "1") {
+  return false;
+}
+},
+function(a,b){
+if (b.from == "app") {
+  return false;
+}
+}];
+
+    // Start Loader Callback
+    u.loader_cb = function () {
+      utag.DB("send:148:CALLBACK");
+      u.initialized = true;
+      _qevents.push(u.data.g);
+      utag.DB("send:148:CALLBACK:COMPLETE");
+    };
+    // End Loader Callback
+
+    u.callBack = function () {
+      var data = {};
+      while (data = u.queue.shift()) {
+        u.data = data.data;
+        u.loader_cb();
+      }
+    };
+
+    u.send = function (a, b) {
+      if (u.ev[a] || u.ev.all !== undefined) {
+        //##UTENABLEDEBUG##utag.DB("send:##UTID##");
+
+        var c, d, e, f, g;
+
+        u.data = {
+          "base_url" : (document.location.protocol == "https:" ? "https://secure" : "http://edge") + ".quantserve.com/quant.js",
+          "qacct" : "p-Yt_4zeGLRgARf",
+          "source" : "TLM",
+          "g" : {}
+        };
+
+        // Start tag-scoped extensions
+        for(c=0;c<u.extend.length;c++){try{d=u.extend[c](a,b);if(d==false)return}catch(e){}};
+        // End tag-scoped extensions
+
+        c = [];
+
+        // Start Mapping
+        for (d in utag.loader.GV(u.map)) {
+          if (b[d] !== undefined && b[d] !== "") {
+            e = u.map[d].split(",");
+            for (f = 0; f < e.length; f++) {
+              u.data[e[f]] = b[d];
+            }
+          }
+        }
+        // End Mapping
+
+        // Check for Account Code starting with "p-"
+        if (String(u.data.qacct).indexOf("p-") !== 0) {
+          u.data.qacct = "p-" + u.data.qacct;
+        }
+
+        u.data.g.qacct = u.data.qacct;
+
+        u.data.g.source = u.data.source;
+
+        if (u.initialized) {
+          u.loader_cb();
+        } else {
+          u.queue.push({"data" : u.data});
+          if (!u.scriptrequested) {
+            u.scriptrequested = true;
+            u.loader({
+              "type" : "script",
+              "src" : u.data.base_url,
+              "cb" : u.callBack,
+              "loc" : "script",
+              "id" : "utag_148",
+              "attrs" : {}
+            });
+          }
+        }
+        //##UTENABLEDEBUG##utag.DB("send:##UTID##:COMPLETE");
+      }
+    };
+    utag.o[loader].loader.LOAD(id);
+  }("148", "leroymerlinit.main"));
+} catch (error) {
+  utag.DB(error);
+}
+//end tealium universal tag
+
+
+

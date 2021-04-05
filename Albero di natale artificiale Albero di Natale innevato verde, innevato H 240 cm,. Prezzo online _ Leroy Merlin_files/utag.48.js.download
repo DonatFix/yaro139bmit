@@ -1,0 +1,213 @@
+//~~tv:3131.20180928
+//~~tc: Check for required transaction data
+
+var _uxa = _uxa || [];
+
+//tealium universal tag - utag.sender.3131 ut4.0.202101071048, Copyright 2021 Tealium.com Inc. All Rights Reserved.
+try {
+  (function (id, loader) {
+    var u = {};
+    utag.o[loader].sender[id] = u;
+
+    // Please do not modify
+    if (utag.ut === undefined) { utag.ut = {}; }
+    // Start Tealium loader 4.35
+    /*eslint-disable-next-line*/
+    if (utag.ut.loader === undefined) { u.loader = function (o) { var b, c, l, a = document; if (o.type === "iframe") { b = a.createElement("iframe"); o.attrs = o.attrs || { "height" : "1", "width" : "1", "style" : "display:none" }; for( l in utag.loader.GV(o.attrs) ){ b.setAttribute( l, o.attrs[l] ); } b.setAttribute("src", o.src); }else if (o.type=="img"){ utag.DB("Attach img: "+o.src); b=new Image();b.src=o.src; return; }else{ b = a.createElement("script");b.language="javascript";b.type="text/javascript";b.async=1;b.charset="utf-8"; for( l in utag.loader.GV(o.attrs) ){ b[l] = o.attrs[l]; } b.src = o.src; } if(o.id){b.id=o.id}; if (typeof o.cb=="function") { if(b.addEventListener) { b.addEventListener("load",function(){o.cb()},false); }else { /* old IE support */ b.onreadystatechange=function(){if(this.readyState=='complete'||this.readyState=='loaded'){this.onreadystatechange=null;o.cb()}}; } } l = o.loc || "head"; c = a.getElementsByTagName(l)[0]; if (c) { utag.DB("Attach to "+l+": "+o.src); if (l == "script") { c.parentNode.insertBefore(b, c); } else { c.appendChild(b) } } } } else { u.loader = utag.ut.loader; }
+    // End Tealium loader
+    // Start Tealium typeOf 4.35
+    if (utag.ut.typeOf === undefined) { u.typeOf = function(e) {return ({}).toString.call(e).match(/\s([a-zA-Z]+)/)[1].toLowerCase();};} else { u.typeOf = utag.ut.typeOf; }
+    // End Tealium typeOf
+
+    u.ev = {"view" : 1, "link" : 1};
+    u.scriptrequested = false;
+
+      u.map={"trans_revenue":"order_total"};
+  u.extend=[function(a,b){
+if (b.page_load == "1") {
+  return false;
+}
+},
+function(a,b){
+if (b.from == "app") {
+  return false;
+}
+},
+function(a,b){ try{ if(typeof b['page_name']!='undefined'){try{b['page_name_lv1']=b.ext_page_name_arr[0] || ""}catch(e){};try{b['page_name_lv2']=b.ext_page_name_arr[1] || ""}catch(e){};try{b['page_name_lv3']=b.ext_page_name_arr[2] || ""}catch(e){};try{b['page_name_lv4']=b.ext_page_name_arr[3] || ""}catch(e){};try{b['page_name_lv5']=b.ext_page_name_arr[4] || ""}catch(e){};try{b['page_name_lv6']=b.ext_page_name_arr[5] || ""}catch(e){};try{b['page_name_lv7']=b.ext_page_name_arr[6] || ""}catch(e){}} } catch(e){ utag.DB(e); }  },
+function(a,b){ try{ if(b['page_name_lv1']=='checkout'){b['csquare_checkout_step']=b['page_name_lv2']} } catch(e){ utag.DB(e); }  },
+function(a,b){ try{ if(1){
+function CS_customVariables(){
+try{
+    window._uxa = window._uxa || [];
+    if (typeof utag_data !== 'undefined') {
+      window._uxa.push(['setCustomVariable', 8, 'page_name_lv1', b.page_name_lv1, 3]);
+      window._uxa.push(['setCustomVariable', 9, 'page_name_lv2', b.page_name_lv2, 3]);
+      window._uxa.push(['setCustomVariable', 10, 'page_name_lv3', b.page_name_lv3, 3]);
+      window._uxa.push(['setCustomVariable', 11, 'page_name_lv4', b.page_name_lv4, 3]);
+        if (typeof b.page_name !== 'undefined') {
+            if (typeof b.page_name[0] !== 'undefined')
+                window._uxa.push(['setCustomVariable', 1, 'pageType', b.page_name[0], 3]);
+        }
+        if (typeof b.page_name !== 'undefined') {
+            if (b.page_name[0] === 'checkout') {
+                if (typeof b.page_name[1] !== 'undefined')
+                    window._uxa.push(['setCustomVariable', 2, 'checkout-step', b.page_name[1], 3]);
+            }
+        }
+        if (typeof b.page_name!== 'undefined') {
+            if (typeof b.page_name[2] !== 'undefined')
+                window._uxa.push(['setCustomVariable', 3, 'productUnivers', b.page_name[2], 3]);
+        }
+        if (typeof b.prod_family !== 'undefined') {
+            if (typeof b.prod_family[0] !== 'undefined')
+                window._uxa.push(['setCustomVariable', 4, 'productFamily', b.prod_family[0], 3]);
+        }
+        if (typeof b.prod_category !== 'undefined') {
+            if (typeof b.prod_category[0] !== 'undefined')
+                window._uxa.push(['setCustomVariable', 5, 'productCategory', b.prod_category[0], 3]);
+        }
+        if (typeof b.prod_avail_store !== 'undefined') {
+            if (typeof b.prod_avail_store[0] !== 'undefined')
+                window._uxa.push(['setCustomVariable', 6, 'productAvail_store', b.prod_avail_store[0], 3]);
+        }
+        if (typeof b.prod_avail_online !== 'undefined') {
+            if (typeof b.prod_avail_online[0] !== 'undefined')
+                window._uxa.push(['setCustomVariable', 7, 'productAvail_online', b.prod_avail_online[0], 3]);
+        }
+        if (typeof b.prod_checkout_type !== 'undefined') {
+            if (typeof b.prod_checkout_type[0] !== 'undefined') {
+               window._uxa.push(['setCustomVariable', 12, 'prod_checkout_type', b.prod_checkout_type[0], 3]); 
+            }
+        }
+    }
+} catch(e){}
+}
+CS_customVariables();
+} } catch(e){ utag.DB(e) }  }];
+
+
+    u.send = function (a, b) {
+      if (u.ev[a] || u.ev.all !== undefined) {
+        //##UTENABLEDEBUG##utag.DB("send:##UTID##");
+
+        // var c is unused because tracking is managed through ContentSquare's "_uxa" api
+        /*eslint no-unused-vars: ["warn", {"varsIgnorePattern": "c"}]*/
+        var c, d, e, f;
+
+        u.data = {
+          "base_url" : "//t.contentsquare.net/uxa/##utag_id_project##.js",
+          "id_project" : "93afd0c849899",
+          "custom" : {},
+          "path" : "",
+          // E-Commerce Vars
+          "product_id" : [],
+          "product_name" : [],
+          "product_sku" : [],
+          "product_category" : [],
+          "product_quantity" : [],
+          "product_unit_price" : []
+        };
+
+        // Start tag-scoped extensions
+        for(c=0;c<u.extend.length;c++){try{d=u.extend[c](a,b);if(d==false)return}catch(e){}};
+        // End tag-scoped extensions
+
+        c = [];
+
+        // Start Mapping
+        for (d in utag.loader.GV(u.map)) {
+          if (b[d] !== undefined && b[d] !== "") {
+            e = u.map[d].split(",");
+            for (f = 0; f < e.length; f++) {
+              if (e[f].indexOf("custom.") === 0) {
+                u.data.custom[[e[f].substr(7)]] = b[d];
+              } else {
+                u.data[e[f]] = b[d];
+              }
+            }
+          }
+        }
+        // End Mapping
+
+        // Pull E-Commerce extension values
+        // Mappings override E-Commerce extension values
+        u.data.order_id = u.data.order_id || b._corder || "";
+        u.data.order_total = u.data.order_total || b._ctotal || "";
+        u.data.order_shipping = u.data.order_shipping || b._cship || "";
+        u.data.order_tax = u.data.order_tax || b._ctax || "";
+        if (u.data.product_id.length === 0 && b._cprod !== undefined) { u.data.product_id = b._cprod.slice(0); }
+        if (u.data.product_name.length === 0 && b._cprodname !== undefined) { u.data.product_name = b._cprodname.slice(0); }
+        if (u.data.product_sku.length === 0 && b._csku !== undefined) { u.data.product_sku = b._csku.slice(0); }
+        if (u.data.product_category.length === 0 && b._ccat !== undefined) { u.data.product_category = b._ccat.slice(0); }
+        if (u.data.product_quantity.length === 0 && b._cquan !== undefined) { u.data.product_quantity = b._cquan.slice(0); }
+        if (u.data.product_unit_price.length === 0 && b._cprice !== undefined) { u.data.product_unit_price = b._cprice.slice(0); }
+
+        u.data.base_url = u.data.base_url.replace("##utag_id_project##", u.data.id_project);
+
+        //pathname
+        u.data.path = u.data.path || location.pathname + location.hash.replace("#", "?__");
+        //Custom Vars
+        var custom, customVar;
+        for (custom in u.data.custom) {
+          if (u.data.custom.hasOwnProperty(custom) && custom !== "") {
+            customVar = custom.split(".");
+            _uxa.push(["setCustomVariable", customVar[0], customVar[1], u.data.custom[custom], 3]);
+          }
+        }
+
+        //Page Views
+        if (a === "view") {
+          _uxa.push(["trackPageview", u.data.path]);
+        } else {
+          _uxa.push(["setPath", u.data.path]);
+        }
+
+        // An order id and total is required to track transactions.
+        if (u.data.order_id && u.data.order_total) {
+          _uxa.push(["ecommerce:addTransaction", {
+            "id" : u.data.order_id,
+            "revenue" : u.data.order_total,
+            "shipping" : u.data.order_shipping,
+            "tax" : u.data.order_tax
+          }]);
+
+          for (f = 0; f < u.data.product_id.length; f++) {
+            // A name, sku, price, and quantity are required to track an item within a transaction.
+            // Since 0 and 0.0 are falsy, price and quantity must be checked as numbers, not just for truthiness.
+            if (
+              u.data.product_name[f] &&
+              u.data.product_sku[f] &&
+              !isNaN(parseFloat(u.data.product_unit_price[f])) &&
+              !isNaN(parseFloat(u.data.product_quantity[f]))
+            ) {
+              _uxa.push(["ecommerce:addItem", {
+                "id" : u.data.order_id,
+                "name" : u.data.product_name[f],
+                "sku" : u.data.product_sku[f],
+                "category" : u.data.product_category[f],
+                "price" : u.data.product_unit_price[f],
+                "quantity" : u.data.product_quantity[f]
+              }]);
+            } else {
+              utag.DB(u.id + " (ContentSquare): Item not tracked in transaction: Required attribute(s) not populated");
+            }
+          }
+          _uxa.push(["ecommerce:send"]);
+        } else {
+          utag.DB(u.id + " (ContentSquare): Transaction not tracked: Required attribute(s) not populated");
+        }
+
+        if (!u.scriptrequested) {
+          u.scriptrequested = true;
+          u.loader({"type": "script", "src": u.data.base_url, "cb": null, "loc": "script", "id": "utag_48"});
+        }
+
+        //##UTENABLEDEBUG##utag.DB("send:##UTID##:COMPLETE");
+      }
+    };
+    utag.o[loader].loader.LOAD(id);
+  }("48", "leroymerlinit.main"));
+} catch (error) {
+  utag.DB(error);
+}
+//end tealium universal tag
